@@ -1,0 +1,47 @@
+# Byte-compiled / optimized / compiled Python files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+env/
+venv/
+ENV/
+
+# Poetry-specific
+poetry.lock
+
+# Unit test / coverage reports
+.coverage
+*.cover
+*.py,cover
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.log
+htmlcov/
+
+# Pytest cache
+.pytest_cache/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Environment variables
+.env
+.env.*
+
+# IDE / Editor-specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# MacOS system files
+.DS_Store
+
+
