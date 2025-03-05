@@ -1,3 +1,4 @@
 from .token_bucket import TokenBucketAlgorithm
 from .fixed_window_counter import FixedWindowCounter
 from .sliding_window_log import SlidingWindowLogAlgorithm
+from .sliding_window_counter import SlidingWindowCounterAlgorithm
