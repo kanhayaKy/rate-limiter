@@ -5,6 +5,17 @@ from rate_limiter.exceptions import RateLimitExceeded
 from threading import Timer, Lock
 
 
+"""
+The token bucket algorithm works like this:
+
+    There is a 'bucket' that has capacity for N tokens. Usually this is a bucket per user or IP address.
+    Every time period a new token is added to the bucket, if the bucket is full the token is discarded.
+    When a request arrives and the bucket contains tokens, the request is handled and a token is removed from the bucket.
+    When a request arrives and the bucket is empty, the request is declined.
+
+"""
+
+
 class TokenBucketAlgorithm(RateLimitingAlgorithm):
     def __init__(self, capacity=10, interval=1, tokens=1):
         super().__init__()

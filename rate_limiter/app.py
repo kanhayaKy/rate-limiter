@@ -1,10 +1,10 @@
 from flask import Flask
 
-from rate_limiter.algorithms import TokenBucketAlgorithm
+from rate_limiter.algorithms import FixedWindowCounter
 from rate_limiter.decorator import rate_limit
 
 app = Flask("rate_limiter")
-rate_limiter = TokenBucketAlgorithm()
+rate_limiter = FixedWindowCounter()
 
 
 @app.route("/")
@@ -13,7 +13,7 @@ def hello_world():
 
 
 @app.route("/limited")
-@rate_limit()
+@rate_limit(rate_limiter=rate_limiter)
 def limited():
     return "Limited, don't over use me!"
 
