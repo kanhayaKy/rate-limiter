@@ -43,6 +43,7 @@ class SlidingWindowLogAlgorithm(RateLimitingAlgorithm):
                 raise RateLimitExceeded
 
             self.window_log[request_user].append(current_time)
+        return True
 
     def remove_expired_logs(self):
         with self.lock:

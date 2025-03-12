@@ -35,6 +35,7 @@ class FixedWindowCounter(RateLimitingAlgorithm):
                 raise RateLimitExceeded
 
             self.current_window_tokens[request_user] += 1
+        return True
 
     def reset_window(self):
         with self.lock:

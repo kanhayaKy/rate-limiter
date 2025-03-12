@@ -1,11 +1,9 @@
-from collections import defaultdict
 from time import time
 
 from .base import RateLimitingAlgorithm
 
 from rate_limiter.exceptions import RateLimitExceeded
 
-from threading import Timer, Lock
 
 """
 It is a hybrid approach that combines the low processing cost of the fixed window algorithm, and the improved boundary conditions of the sliding log algorithm.
@@ -17,49 +15,41 @@ It is a hybrid approach that combines the low processing cost of the fixed windo
 
 
 class SlidingWindowCounterAlgorithm(RateLimitingAlgorithm):
-    def __init__(self, window=10, limit=10):
+    def __init__(self, store, window=10, limit=10):
         super().__init__()
 
         self.window = window
         self.window_limit = limit
 
-        self.current_window_start = None
-        self.current_window_tokens = defaultdict(int)
-        self.previous_window_tokens = defaultdict(int)
-
-        self.lock = Lock()
-
-        self.reset_window()
+        self.store = store
 
     def should_process(self, request_user):
-        with self.lock:
-            current_window_token_count = self.current_window_tokens[request_user]
-            previous_window_token_count = self.previous_window_tokens[request_user]
+        current_time = time()
+        window_start = current_time // self.window
 
-            current_time = time()
-            elapsed_time = (current_time - self.current_window_start) / self.window
+        current_window_key = f"rate_limit:{request_user}:{window_start}"
+        previous_window_key = f"rate_limit:{request_user}:{window_start-1}"
 
-            effective_current_window_token = current_window_token_count * elapsed_time
-            effective_previous_window_token = previous_window_token_count * (
-                1 - elapsed_time
-            )
+        current_window_token_count = int(self.store.get(current_window_key) or 0)
+        previous_window_token_count = int(self.store.get(previous_window_key) or 0)
 
-            combined_window_token = (
-                effective_current_window_token + effective_previous_window_token
-            )
+        current_time = time()
+        elapsed_time = min(1.0, ((window_start * (self.window)) / self.window))
 
-            print(combined_window_token, "################")
-            if combined_window_token >= self.window_limit:
-                raise RateLimitExceeded
+        effective_current_window_token = current_window_token_count * elapsed_time
+        effective_previous_window_token = previous_window_token_count * (
+            1 - elapsed_time
+        )
 
-            self.current_window_tokens[request_user] += 1
+        combined_window_token = (
+            effective_current_window_token + effective_previous_window_token
+        )
 
-    def reset_window(self):
-        with self.lock:
-            self.current_window_start = time()
-            self.previous_window_tokens = self.current_window_tokens
-            self.current_window_tokens.clear()
+        if combined_window_token >= self.window_limit:
+            raise RateLimitExceeded
 
-        timer = Timer(self.window, self.reset_window, args=())
-        timer.daemon = True
-        timer.start()
+        self.store.incr(current_window_key)
+
+        if current_window_token_count == 0:
+            # Set expire only if new expiry is less than existing expiry
+            self.store.expire(current_window_key, self.window * 2, lt=True)

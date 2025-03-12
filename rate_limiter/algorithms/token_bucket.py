@@ -39,6 +39,7 @@ class TokenBucketAlgorithm(RateLimitingAlgorithm):
                 raise RateLimitExceeded
 
             self.bucket[request_user] -= 1
+        return True
 
     def add_token(self):
         with self.lock:
