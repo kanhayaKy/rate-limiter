@@ -1,4 +1,6 @@
+import os
 from time import time
+from redis import Redis
 
 from .base import RateLimitingAlgorithm
 
@@ -13,9 +15,14 @@ It is a hybrid approach that combines the low processing cost of the fixed windo
 
 """
 
+REDIS_HOST = os.getenv("REDIS_HOST", "redis")
+REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+
+redis_store = Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+
 
 class SlidingWindowCounterAlgorithm(RateLimitingAlgorithm):
-    def __init__(self, store, window=10, limit=10):
+    def __init__(self, store=redis_store, window=10, limit=10):
         super().__init__()
 
         self.window = window

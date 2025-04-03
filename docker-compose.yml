@@ -1,0 +1,19 @@
+services:
+  rate_limiter:
+    container_name: rate-limiter
+    build: .
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    command: [ "poetry", "run", "flask", "run", "--host=0.0.0.0", "--port=5000" ]
+
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: [ "redis-server" ]

@@ -1,13 +1,19 @@
+import os
+
 from flask import Flask
 from redis import Redis
 
 from rate_limiter.algorithms import SlidingWindowCounterAlgorithm
 from rate_limiter.decorator import rate_limit
+from rate_limiter.util import get_algorithm_from_name
+
+# Environment variables
+ALGORITHM = os.getenv("RATE_LIMIT_ALGORITHM", "sliding_window_counter")
+
 
 app = Flask("rate_limiter")
 
-redis_store = Redis(host="localhost", port=6379, decode_responses=True)
-rate_limiter = SlidingWindowCounterAlgorithm(store=redis_store)
+rate_limiter = get_algorithm_from_name(ALGORITHM)
 
 
 @app.route("/")
